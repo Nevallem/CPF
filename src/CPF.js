@@ -2,8 +2,8 @@
  * Create, validate and format CPFs
  *
  * @author Roger Lima (rogerlima@outlook.com)
- * @date 05/jan/2012
- * @update 21/feb/2015
+ * @date 21/feb/2015
+ * @update 15/apr/2016
  */
 /* jshint laxbreak: true, bitwise: false */
 
@@ -18,10 +18,10 @@ var CPF = {};
 /**
  * Gets the verifier of a given set of numbers
  *
- * @param {string} seed Group of nine numbers randoms
+ * @param {string} Group of nine random numbers
  * @return {number}
  */
-function getVerifier( seed ) {
+function get_verifier( seed ) {
 	for ( var i = 0, verifier = 0; i < seed.length; verifier += seed[ i ] * ( seed.length - i++ + 1 ) );
 
 	return ( verifier % 11 ) < 2 ? 0 : 11 - ( verifier % 11 );
@@ -35,7 +35,7 @@ function getVerifier( seed ) {
 CPF.format = function( cpf ) {
 	if ( typeof cpf !== 'string' )
 		throw 'CPF.validate: "cpf" argument need be a string';
-	
+
 	return cpf.replace( /[^\d]/, '' ).substr( 0, 11 )
 		.replace( /(\d{3})(?=\d{3})/g, '$1.' )
 		.replace( /(\d{2})$/, "-$1" );
@@ -45,8 +45,8 @@ CPF.format = function( cpf ) {
 /**
  * Create a valid CPF
  *
- * @param {boolean} format Format or not the CPF
- * @param {string|number} [region] Tax Region. If empty, random region is setted;
+ * @param {boolean} Format or not the CPF
+ * @param [{string|number}] Tax Region. If empty, random region is setted;
  * Tax region possibly values
 	1 (Centro-Oeste, Tocantins)
 	2 (Norte -Tocantins)
@@ -62,7 +62,7 @@ CPF.format = function( cpf ) {
  * @return {string}
  */
 CPF.generate = function( format, region ) {
-	var firstVerifier,
+	var first_verifier,
 		seed = ( ( ( Math.random() * 9e8 ) >> 0 ) + '' );
 
 	while ( seed.length != 9 )
@@ -75,37 +75,38 @@ CPF.generate = function( format, region ) {
 			throw 'CPF.generate: the "region" range need be between 0 and 10';
 	}
 
-	firstVerifier = getVerifier( seed );
+	first_verifier = get_verifier( seed );
 
 	return ( format
 		? seed.replace( /(\d{3})(?=\d{3})/g, '$1.' ) + '-'
 		: seed
-	) + firstVerifier + getVerifier( seed + firstVerifier );
+	) + first_verifier + get_verifier( seed + first_verifier );
 };
 
 /**
  * Validate a CPF
  *
- * @param {string} cpf CPF to validate
+ * @param {string} CPF to validate
  * @return {boolean}
  */
 CPF.validate = function( cpf ) {
-	var i, sameNumbers, firstVerifier;
+	var i, same_numbers, first_verifier;
 
 	if ( typeof cpf === 'undefined' )
 		throw 'CPF.validate: missing "cpf" argument';
 	else if ( typeof cpf !== 'string' )
 		throw 'CPF.validate: "cpf" argument need be a string';
 
-	cpf = cpf.replace( /[^\d]/g, '' ); // Removes all characters that aren't numbers
-	firstVerifier = getVerifier( cpf.substr( 0, 9 ) );
+	cpf = cpf.replace( /[^\d]/g, '' );
+	first_verifier = get_verifier( cpf.substr( 0, 9 ) );
 
-	for ( i = 0, sameNumbers = 0; i < cpf.length; ( cpf[ i++ ] === cpf[ i ] ) && sameNumbers++ );
+	// Prevents false positive (111.111.111-11, ...)
+	for ( i = 0, same_numbers = 0; i < cpf.length; ( cpf[ i++ ] === cpf[ i ] ) && same_numbers++ );
 
-	return sameNumbers < 10
+	return same_numbers < 10
 		&& cpf.length === 11
-		&& cpf[ cpf.length - 2 ] == firstVerifier
-		&& cpf[ cpf.length - 1 ] == getVerifier( cpf.substr( 0, 9 ) + firstVerifier );
+		&& cpf[ cpf.length - 2 ] == first_verifier
+		&& cpf[ cpf.length - 1 ] == get_verifier( cpf.substr( 0, 9 ) + first_verifier );
 };
 
 window.CPF = CPF;

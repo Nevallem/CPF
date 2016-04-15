@@ -13,7 +13,6 @@ class CPF {
 private:
 	// Get the verifier digit
 	// @param {string} Numbers
-	// @see http://www.gerardocumentos.com.br/?pg=entenda-a-formula-do-cpf
 	static int get_verifier( std::string );
 public:
 	// Format a CPF
